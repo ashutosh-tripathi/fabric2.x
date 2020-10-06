@@ -1,0 +1,44 @@
+version: '2'
+services: 
+  orderer.acme.com:
+    container_name: orderer.acme
+    image: hyperledger/fabric-orderer:2.2
+    environment: 
+       - ORDERER_HOST=0.0.0.0:7050
+       - CONFIGTX_ORDERER_ORDERERTYPE=KAFKA
+       - CONFIGTX_ORDERER_KAFKA_BROKERS=<Broker's IP>
+       - ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s
+       - ORDERER_KAFKA_RETRY_SHORTTOTAL=30s
+       - ORDERER_KAFKA_VERBOSE=true
+       - GRPC_TRACE= all
+       - GRPC_VERBOSITY= debug
+       - ORDERER_GENERAL_LOGLEVEL= debug
+       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+       - ORDERER_GENERAL_LISTENPORT=7050
+       - ORDERER_GENERAL_LEDGERTYPE=FILE
+       - ORDERER_FILELEDGER_LOCATION=/etc/hyperledger/configtx/ledger
+       - ORDERER_GENERAL_GENESISMETHOD=FILE
+       - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
+       - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+       #setting crypto service provideer
+      # - ORDERER_GENERAL_BCCSP=HW
+       - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/orderer
+       # time between pings from peer
+       - ORDERER_GENERAL_KEEPALIVE_SERVERMININTERVAL=60s
+       # time interval between request to ping peer
+       - ORDERER_GENERAL_KEEPALIVE_SERVERINTERVAL=7200s
+       # time to wait before server timed out after pinging request
+       - ORDERER_GENERAL_KEEPALIVE_SERVERTIMEOUT=20s
+       - ORDERER_GENERAL_TLS_ENABLED=true
+       - ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED=false
+       - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/msp/orderer/tls/server.key
+       - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/msp/orderer/tls/server.crt
+       - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/msp/orderer/tls/ca.crt]
+       - ORDERER_GENERAL_TLS_CLIENTROOTCAS=[/etc/hyperledger/msp/peerOrg1/msp/tlscacerts/tlsca.org1.example.com-cert.pem, /etc/hyperledger/msp/peerOrg2/msp/tlscacerts/tlsca.org2.example.com-cert.pem]
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    volumes: 
+       - ./../cryptos/ordererOrganizations/acme.com/genesis/:/etc/hyperledger/configtx
+       - ./../cryptos/ordererOrganizations/acme.com/orderers/orderer.acme.com/msp/:/etc/hyperledger/msp/orderer
+       - ./../cryptos/ordererOrganizations/acme.com/orderers/orderer.acme.com/filesystem:/var/hyperledger/production
+       - ./../cryptos/ordererOrganizations/acme.com/orderers/orderer.acme.com/tls:/etc/hyperledger/msp/orderer/tls

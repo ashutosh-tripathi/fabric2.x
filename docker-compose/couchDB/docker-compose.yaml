@@ -1,0 +1,44 @@
+version: '2'
+services: 
+  couchdb0:
+    container_name: couchdb0.org1.com
+    image: hyperledger/fabric-couchdb:latest
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=admin
+
+  couchdb1:
+    container_name: couchdb1.org1.com
+    image: hyperledger/fabric-couchdb:latest
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=admin
+  
+  couchdb2:
+    container_name: couchdb0.org2.com
+    image: hyperledger/fabric-couchdb:latest
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=admin
+  couchdb3:
+    container_name: couchdb1.org2.com
+    image: hyperledger/fabric-couchdb:latest
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=admin
+networks:
+    default:
+        external:
+            name: fabric
+
+
+      
+    
+    
+    
+    
+    
+    
+    
+
+   

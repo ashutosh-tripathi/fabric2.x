@@ -1,0 +1,51 @@
+version: '2'
+services: 
+  orderer.com:
+    container_name: orderer
+    image: hyperledger/fabric-orderer:2.2
+    ports: 
+       - 7050:7050
+       - 8443:8443
+    environment: 
+       - GRPC_TRACE= all
+       - GRPC_VERBOSITY= debug
+       - FABRIC_LOGGING_SPEC=info
+       - ORDERER_GENERAL_LOGLEVEL= debug
+       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+       - ORDERER_GENERAL_LISTENPORT=7050
+       - ORDERER_GENERAL_LEDGERTYPE=FILE
+       - ORDERER_FILELEDGER_LOCATION=/var/hyperledger/orderer/ledger
+       - ORDERER_GENERAL_GENESISMETHOD=FILE
+       - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/genesis.block
+       - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+       #setting crypto service provideer
+      # - ORDERER_GENERAL_BCCSP=HW
+       - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+       # time between pings from peer
+       #- ORDERER_GENERAL_KEEPALIVE_SERVERMININTERVAL=60s
+       # time interval between request to ping peer
+      # - ORDERER_GENERAL_KEEPALIVE_SERVERINTERVAL=7200s
+       # time to wait before server timed out after pinging request
+       #- ORDERER_GENERAL_KEEPALIVE_SERVERTIMEOUT=60s
+       - ORDERER_GENERAL_TLS_ENABLED=true
+       - ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED=false
+       - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+       - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+       - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+       - ORDERER_KAFKA_VERBOSE=true
+       - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+       - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+       - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+       - ORDERER_METRICS_PROVIDER=prometheus
+       - ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:8443
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/orderers
+    command: orderer
+    volumes: 
+       - ./../../genesis.block:/var/hyperledger/orderer/genesis.block
+       - ./../../crypto-config/ordererOrganizations/orderer.com/orderers/orderer.orderer.com/msp:/var/hyperledger/orderer/msp
+       - ./../../crypto-config/ordererOrganizations/orderer.com/orderers/orderer.orderer.com/tls:/var/hyperledger/orderer/tls
+       - ./../../crypto-config/ordererOrganizations/orderer.com/orderers/orderer.orderer.com/filesystem:/var/hyperledger/production
+networks:
+    default:
+        external:
+            name: fabric       
