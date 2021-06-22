@@ -57,7 +57,7 @@ peer:
         minInterval: 60s
         # Client keepalive settings for communicating with other peer nodes
         client:
-            # Interval is the time between pings to peer nodes.  This must
+            # Interval is the time between pings to peer nodes.  This mustOrdererGenesis
             # greater than or equal to the minInterval specified by peer
             # nodes
             interval: 60s

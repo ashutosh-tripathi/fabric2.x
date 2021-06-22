@@ -222,7 +222,7 @@ Orderer: &OrdererDefaults
     # Batch Timeout: The amount of time to wait before creating a batch
     BatchTimeout: 2s
 
-    # Batch Size: Controls the number of messages batched into a block
+    # Batch Size: Controls the number of messages batched into a block65.2.82.13
     BatchSize:
 
         # Max Message Count: The maximum number of messages to permit in a batch

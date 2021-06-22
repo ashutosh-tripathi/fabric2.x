@@ -11,7 +11,7 @@ services:
       - FABRIC_CA_SERVER_CA_NAME=ca.org1.com
       - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org1.com-cert.pem
       - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/priv_sk
-      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_TLS_ENABLED=false
       - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-tls/tlsca.org1.com-cert.pem
       - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-tls/priv_sk
     ports:
@@ -32,7 +32,7 @@ services:
       - FABRIC_CA_SERVER_CA_NAME=ca.org2.com
       - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org2.com-cert.pem
       - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/priv_sk
-      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_TLS_ENABLED=false
       - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-tls/tlsca.org2.com-cert.pem
       - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-tls/priv_sk
     ports:
@@ -92,17 +92,6 @@ services:
     networks:
       - test
    
-  couchdb1:
-    container_name: couchdb1.org1.com
-    image: hyperledger/fabric-couchdb:latest
-    environment:
-      - COUCHDB_USER=admin
-      - COUCHDB_PASSWORD=admin
-    ports:
-      - 6984:5984
-    networks:
-      - test
-
   couchdb2:
     container_name: couchdb0.org2.com
     image: hyperledger/fabric-couchdb
@@ -114,16 +103,6 @@ services:
     networks:
       - test
 
-  couchdb3:
-    container_name: couchdb1.org2.com
-    image: hyperledger/fabric-couchdb
-    environment:
-      - COUCHDB_USER=admin
-      - COUCHDB_PASSWORD=admin
-    ports:
-      - 8984:5984
-    networks:
-      - test
 
   peer0.org1.com:
     container_name: peer0.org1.com
@@ -144,7 +123,7 @@ services:
       - CORE_PEER_CHAINCODEADDRESS=peer0.org1.com:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
       # Peer used to bootstrap gossip within organisation
-      - CORE_PEER_GOSSIP_BOOTSTRAP=127.0.0.1:8051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=127.0.0.1:7051
       # Exposed for discovery Service
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=127.0.0.1:7051
 
@@ -164,52 +143,13 @@ services:
       - couchdb0
     ports:
       - 7051:7051
+      - 7052:7052
     volumes:
       - ./../../crypto-config/peerOrganizations/org1.com/peers/peer0.org1.com/msp/:/etc/hyperledger/crypto/peer/msp
       - ./../../crypto-config/peerOrganizations/org1.com/peers/peer0.org1.com/tls:/etc/hyperledger/crypto/peer/tls
+      - ./../../crypto-config/peerOrganizations/org1.com/peers/peer0.org1.com/filesystem:/var/hyperledger/production
       - /var/run/:/host/var/run/
 
-    networks:
-      - test
-
-  peer1.org1.com:
-    container_name: peer1.org1.com
-    extends:
-      file: base.yaml
-      service: peer-base
-    environment:
-      - FABRIC_LOGGING_SPEC=DEBUG
-      - ORDERER_GENERAL_LOGLEVEL=debug
-      - CORE_PEER_LOCALMSPID=Org1MSP
-
-     # - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_test
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=complete_test
-      - CORE_PEER_ID=peer1.org1.com
-      - CORE_PEER_ADDRESS=peer1.org1.com:8051
-      - CORE_PEER_LISTENADDRESS=0.0.0.0:8051
-      - CORE_PEER_CHAINCODEADDRESS=peer1.org1.com:8052
-      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:8052
-      # Exposed for discovery Service
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=127.0.0.1:8051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=127.0.0.1:7051
-
-      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=admin
-      - CORE_METRICS_PROVIDER=prometheus
-      # - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9440
-      - CORE_PEER_TLS_ENABLED=true
-      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
-      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
-      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/peer/msp
-    ports:
-      - 8051:8051
-    volumes:
-      - ./../../crypto-config/peerOrganizations/org1.com/peers/peer1.org1.com/msp/:/etc/hyperledger/crypto/peer/msp
-      - ./../../crypto-config/peerOrganizations/org1.com/peers/peer1.org1.com/tls/:/etc/hyperledger/crypto/peer/tls
-      - /var/run/:/host/var/run/
     networks:
       - test
 
@@ -233,7 +173,7 @@ services:
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9052
       # Exposed for discovery Service
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=127.0.0.1:9051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=127.0.0.1:10051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=127.0.0.1:9051
 
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb2:5984
@@ -248,50 +188,13 @@ services:
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/peer/msp
     ports:
       - 9051:9051
+      - 9052:9052
     volumes:
       - ./../../crypto-config/peerOrganizations/org2.com/peers/peer0.org2.com/msp:/etc/hyperledger/crypto/peer/msp
       - ./../../crypto-config/peerOrganizations/org2.com/peers/peer0.org2.com/tls:/etc/hyperledger/crypto/peer/tls
+      - ./../../crypto-config/peerOrganizations/org2.com/peers/peer0.org2.com/filesystem:/var/hyperledger/production
       - /var/run/:/host/var/run/
     networks:
       - test
 
-  peer1.org2.com:
-    container_name: peer1.org2.com
-    extends:
-      file: base.yaml
-      service: peer-base
-    environment:
-      - FABRIC_LOGGING_SPEC=DEBUG
-      - ORDERER_GENERAL_LOGLEVEL=debug
-      - CORE_PEER_LOCALMSPID=Org2MSP
-
-      #- CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_test
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=complete_test
-      - CORE_PEER_ID=peer1.org2.com
-      - CORE_PEER_ADDRESS=peer1.org2.com:10051
-      - CORE_PEER_LISTENADDRESS=0.0.0.0:10051
-      - CORE_PEER_CHAINCODEADDRESS=peer1.org2.com:10052
-      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:10052
-      # Exposed for discovery Service
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=127.0.0.1:10051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=127.0.0.1:9051
-
-      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb3:5984
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=admin
-      - CORE_METRICS_PROVIDER=prometheus
-      # - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9440
-      - CORE_PEER_TLS_ENABLED=true
-      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
-      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
-      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/peer/msp
-    ports:
-      - 10051:10051
-    volumes:
-      - ./../../crypto-config/peerOrganizations/org2.com/peers/peer1.org2.com/msp:/etc/hyperledger/crypto/peer/msp
-      - ./../../crypto-config/peerOrganizations/org2.com/peers/peer1.org2.com/tls:/etc/hyperledger/crypto/peer/tls
-      - /var/run/:/host/var/run/
-    networks:
-      - test
+  

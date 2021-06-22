@@ -1,0 +1,66 @@
+version: "2"
+
+networks:
+  test:
+
+services:
+  couchdb0:
+    container_name: couchdb0.org1.com
+    image: hyperledger/fabric-couchdb:latest
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=admin
+    ports:
+      - 5984:5984
+    networks:
+      - test
+  peer0.org1.com:
+    container_name: peer0.org1.com
+    extends:
+      file: base.yaml
+      service: peer-base
+    environment:
+      - FABRIC_LOGGING_SPEC=DEBUG
+      - ORDERER_GENERAL_LOGLEVEL=DEBUG
+      - CORE_PEER_LOCALMSPID=Org1MSP
+
+      #- CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_test
+      #directory of dockercompose containing folder_<network name>
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=peerdev_test
+      - CORE_PEER_ID=peer0.org1.com
+      - CORE_PEER_ADDRESS=peer0.org1.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.org1.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      # Peer used to bootstrap gossip within organisation
+      - CORE_PEER_GOSSIP_BOOTSTRAP=127.0.0.1:7051
+      # Exposed for discovery Service
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=127.0.0.1:7051
+
+      # - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9440
+
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=admin
+      - CORE_METRICS_PROVIDER=prometheus
+      - CORE_PEER_TLS_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/peer/msp
+    depends_on:
+      - couchdb0
+    ports:
+      - 7051:7051
+      - 7052:7052
+    volumes:
+      - ./../../crypto-config/peerOrganizations/org1.com/peers/peer0.org1.com/msp/:/etc/hyperledger/crypto/peer/msp
+      - ./../../crypto-config/peerOrganizations/org1.com/peers/peer0.org1.com/tls:/etc/hyperledger/crypto/peer/tls
+      - ./../../crypto-config/peerOrganizations/org1.com/peers/peer0.org1.com/filesystem:/var/hyperledger/production
+      - /var/run/:/host/var/run/
+
+    networks:
+      - test
+
+  
